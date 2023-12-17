@@ -1,10 +1,11 @@
-datasets
 .vscode/settings.json
 *.txt
 build/**
 bin/**
+datasets/**
 encoderEnv
+*.keras
 
 # exclude
 !.keep
-!.requirements.txt
+!requirements.txt
