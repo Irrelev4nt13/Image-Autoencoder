@@ -36,29 +36,44 @@ if __name__ == "__main__":
     train_images = train_images.astype('float32') / 255
     val_images = val_images.astype('float32') / 255
 
-    # Define the encoder part of the model
-    encoder = tf.keras.Sequential([
+    # # Define the encoder part of the model
+    # encoder = tf.keras.Sequential([
+    #     Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(num_rows, num_cols, 1)),
+    #     MaxPooling2D((2, 2), padding='same'),
+    #     Conv2D(64, (3, 3), activation='relu', padding='same'),
+    #     MaxPooling2D((2, 2), padding='same'),
+    #     Flatten(),
+    #     Dense(64, activation='relu'),
+    #     Dense(10, activation='relu')
+    # ])
+
+    # # Define the decoder part of the model
+    # decoder = tf.keras.Sequential([
+    #     Dense(64, activation='relu', input_shape=(10,)),
+    #     Dense(7*7*64, activation='relu'),
+    #     Reshape((7, 7, 64)),
+    #     Conv2DTranspose(64, (3, 3), strides=2, activation='relu', padding='same'),
+    #     Conv2DTranspose(32, (3, 3), strides=2, activation='relu', padding='same'),
+    #     Conv2D(1, (3, 3), activation='relu', padding='same')
+    # ])
+
+    # Combine the encoder and decoder into an autoencoder model
+    # autoencoder = tf.keras.Model(inputs=encoder.input, outputs=decoder(encoder.output))
+
+    autoencoder = tf.keras.Sequential([
         Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(num_rows, num_cols, 1)),
         MaxPooling2D((2, 2), padding='same'),
         Conv2D(64, (3, 3), activation='relu', padding='same'),
         MaxPooling2D((2, 2), padding='same'),
         Flatten(),
         Dense(64, activation='relu'),
-        Dense(10, activation='relu')
-    ])
-
-    # Define the decoder part of the model
-    decoder = tf.keras.Sequential([
+        Dense(10, activation='relu'),
         Dense(64, activation='relu', input_shape=(10,)),
         Dense(7*7*64, activation='relu'),
         Reshape((7, 7, 64)),
         Conv2DTranspose(64, (3, 3), strides=2, activation='relu', padding='same'),
         Conv2DTranspose(32, (3, 3), strides=2, activation='relu', padding='same'),
-        Conv2D(1, (3, 3), activation='relu', padding='same')
     ])
-
-    # Combine the encoder and decoder into an autoencoder model
-    autoencoder = tf.keras.Model(inputs=encoder.input, outputs=decoder(encoder.output))
 
     autoencoder.summary()
 
