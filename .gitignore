@@ -1,0 +1,10 @@
+datasets
+.vscode/settings.json
+*.txt
+build/**
+bin/**
+encoderEnv
+
+# exclude
+!.keep
+!.requirements.txt
