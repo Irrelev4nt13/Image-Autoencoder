@@ -3,7 +3,7 @@ import tensorflow as tf
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Reshape, Conv2DTranspose
 from sklearn.model_selection import train_test_split
 
-MAX_TRAINING_IMAGES = 3000 # Number of images to use for training
+MAX_TRAINING_IMAGES = 5000 # Number of images to use for training
 
 # Read IDX3-ubyte file
 def read_idx(filename):
@@ -30,7 +30,11 @@ if __name__ == "__main__":
     # Reshape images to 4D tensor (batch_size, height, width, channels)
     images = images.reshape(-1, num_rows, num_cols, 1)
 
-    train_images, val_images = train_test_split(images, test_size=0.2)
+    train_images, val_images = train_test_split(images, test_size=0.1)
+
+    # Normalize images to [0, 1] range
+    train_images = train_images.astype('float32') / 255
+    val_images = val_images.astype('float32') / 255
 
     # Define the encoder part of the model
     encoder = tf.keras.Sequential([
@@ -58,12 +62,12 @@ if __name__ == "__main__":
 
     autoencoder.summary()
 
-    optimizer = tf.keras.optimizers.SGD(learning_rate=0.01, momentum=0.9)
+    # optimizer = tf.keras.optimizers.SGD(learning_rate=0.01, momentum=0.9)
 
-    autoencoder.compile(optimizer=optimizer, loss='mae', metrics=['accuracy'])
+    autoencoder.compile(optimizer='adam', loss='mse', metrics=['mae'])
 
     # Train the model
-    autoencoder.fit(train_images, train_images, epochs=4, batch_size=32, validation_data=(val_images, val_images))
+    autoencoder.fit(train_images, train_images, epochs=5, batch_size=64, validation_data=(val_images, val_images))
 
     # Save the model
     autoencoder.save('autoencoder_model.keras')
