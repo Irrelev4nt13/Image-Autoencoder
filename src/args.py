@@ -1,5 +1,4 @@
 import sys
-import os
 import numpy as np
 
 
@@ -14,12 +13,6 @@ def get_files(arguments):
 
 
 def load_file(file_name):
-    # Save the current working directory
-    current_directory = os.getcwd()
-
-    # Change to the directory where your Makefile is located
-    os.chdir("..")
-
     # Get data
     with open(file_name, "rb") as file:
         meta_data = np.fromfile(file, dtype=np.int32, count=4)
@@ -35,39 +28,19 @@ def load_file(file_name):
     data["number_of_columns"] = meta_data.view(">i4")[3]
     data["images"] = pixels.reshape(data["number_of_images"], data["number_of_rows"] * data["number_of_columns"])
 
-    # Restore the original working directory
-    os.chdir(current_directory)
-
     # Return data
     return data
 
 
 def save_file(data, file_name):
-    # Save the current working directory
-    current_directory = os.getcwd()
-
-    # Change to the directory where your Makefile is located
-    os.chdir("..")
-
     # Save data
     with open(file_name, "wb") as file:
         # In order for the output folder to keep the same format we need to make the number little endian again
         # Because we read it as big endian
         file.write(data["magic_number"].byteswap().tobytes())
-        file.write(data["number_of_images"].byteswap().tobytes())
-        file.write(data["number_of_rows"].byteswap().tobytes())
-        file.write(data["number_of_columns"].byteswap().tobytes())
+        file.write(data["number_of_images"].to_bytes(4, 'big'))
+        file.write(data["latent_dim"].to_bytes(4, 'big'))
+        file.write(data['metadata_padding'].to_bytes(4, 'big'))
 
         for image in data["images"]:
             file.write(image)
-
-    # Restore the original working directory
-    os.chdir(current_directory)
-
-
-if __name__ == "__main__":
-    files = get_files(sys.argv)
-    data = load_file(files["-d"])
-    save_file(data, files["-od"])
-    data = load_file(files["-q"])
-    save_file(data, files["-oq"])

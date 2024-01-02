@@ -2,33 +2,33 @@ import numpy as np
 import tensorflow as tf
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Reshape, Conv2DTranspose
 from sklearn.model_selection import train_test_split
+import args
+import sys
 
 MAX_TRAINING_IMAGES = 5000 # Number of images to use for training
-
-# Read IDX3-ubyte file
-def read_idx(filename):
-    with open(filename, 'rb') as file:
-        data = np.fromfile(file, dtype=np.uint8, count=-1)
-    return data
+MAX_QUERY_IMAGES = 1000 # Number of images to use for query
 
 if __name__ == "__main__":
-    # Load the binary training dataset
-    file_path = 'datasets/train-images.idx3-ubyte'
-    data = read_idx(file_path)
 
-    # Extract header information. Read in Big Endian format
-    magic_number = data[:4].view('>u4')[0]
-    num_items = data[4:8].view('>u4')[0]
-    num_rows = data[8:12].view('>u4')[0]
-    num_cols = data[12:16].view('>u4')[0]
+    # Get files
+    files = args.get_files(sys.argv)
 
-    num_to_load = min(MAX_TRAINING_IMAGES, num_items)
+    train_data = args.load_file(files["-d"])
 
-    # Extract image data
-    images = data[16:].reshape(num_items, num_rows * num_cols)[:num_to_load]
+    query_data = args.load_file(files["-q"])
+
+    num_of_rows = train_data['number_of_rows']
+    num_of_columns = train_data['number_of_columns']
+    
+    # Extract image train_data
+    images = train_data['images'][:MAX_TRAINING_IMAGES]
+
+    query_images = query_data['images'][:MAX_QUERY_IMAGES]
 
     # Reshape images to 4D tensor (batch_size, height, width, channels)
-    images = images.reshape(-1, num_rows, num_cols, 1)
+    images = images.reshape(-1, num_of_rows, num_of_columns, 1)
+
+    query_images = query_images.reshape(-1, num_of_rows, num_of_columns, 1)
 
     train_images, val_images = train_test_split(images, test_size=0.1)
 
@@ -36,53 +36,62 @@ if __name__ == "__main__":
     train_images = train_images.astype('float32') / 255
     val_images = val_images.astype('float32') / 255
 
-    # # Define the encoder part of the model
-    # encoder = tf.keras.Sequential([
-    #     Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(num_rows, num_cols, 1)),
-    #     MaxPooling2D((2, 2), padding='same'),
-    #     Conv2D(64, (3, 3), activation='relu', padding='same'),
-    #     MaxPooling2D((2, 2), padding='same'),
-    #     Flatten(),
-    #     Dense(64, activation='relu'),
-    #     Dense(10, activation='relu')
-    # ])
+    latent_dim = 10
 
-    # # Define the decoder part of the model
-    # decoder = tf.keras.Sequential([
-    #     Dense(64, activation='relu', input_shape=(10,)),
-    #     Dense(7*7*64, activation='relu'),
-    #     Reshape((7, 7, 64)),
-    #     Conv2DTranspose(64, (3, 3), strides=2, activation='relu', padding='same'),
-    #     Conv2DTranspose(32, (3, 3), strides=2, activation='relu', padding='same'),
-    #     Conv2D(1, (3, 3), activation='relu', padding='same')
-    # ])
-
-    # Combine the encoder and decoder into an autoencoder model
-    # autoencoder = tf.keras.Model(inputs=encoder.input, outputs=decoder(encoder.output))
-
-    autoencoder = tf.keras.Sequential([
-        Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(num_rows, num_cols, 1)),
+    # Define the encoder part of the model
+    encoder = tf.keras.Sequential([
+        Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(num_of_rows, num_of_columns, 1)),
         MaxPooling2D((2, 2), padding='same'),
         Conv2D(64, (3, 3), activation='relu', padding='same'),
         MaxPooling2D((2, 2), padding='same'),
         Flatten(),
         Dense(64, activation='relu'),
-        Dense(10, activation='relu'),
+        Dense(latent_dim, activation='relu')
+    ])
+
+    # Define the decoder part of the model
+    decoder = tf.keras.Sequential([
         Dense(64, activation='relu', input_shape=(10,)),
         Dense(7*7*64, activation='relu'),
         Reshape((7, 7, 64)),
         Conv2DTranspose(64, (3, 3), strides=2, activation='relu', padding='same'),
         Conv2DTranspose(32, (3, 3), strides=2, activation='relu', padding='same'),
+        Conv2D(1, (3, 3), activation='relu', padding='same')
     ])
 
-    autoencoder.summary()
+    # Combine the encoder and decoder into an autoencoder model
+    autoencoder = tf.keras.Model(inputs=encoder.input, outputs=decoder(encoder.output))
 
-    # optimizer = tf.keras.optimizers.SGD(learning_rate=0.01, momentum=0.9)
+    autoencoder.summary()
 
     autoencoder.compile(optimizer='adam', loss='mse', metrics=['mae'])
 
     # Train the model
     autoencoder.fit(train_images, train_images, epochs=5, batch_size=64, validation_data=(val_images, val_images))
 
-    # Save the model
-    autoencoder.save('autoencoder_model.keras')
+    # Compress the images using the encoder
+    compressed_train_images = encoder.predict(images)
+    max_value_train = tf.reduce_max(compressed_train_images)
+
+    compressed_query_images = encoder.predict(query_images)
+    max_value_query = tf.reduce_max(compressed_query_images)
+
+    # Rescale the compressed images back to the 0-255 range
+    compressed_train_images = (compressed_train_images / max_value_train) * 255
+    compressed_train_images = tf.cast(compressed_train_images, tf.uint8)
+    compressed_query_images = (compressed_query_images / max_value_query) * 255
+    compressed_query_images = tf.cast(compressed_query_images, tf.uint8)
+
+    train_data['number_of_images'] = MAX_TRAINING_IMAGES
+    train_data['latent_dim'] = latent_dim
+    train_data['metadata_padding'] = 0
+    train_data['images'] = compressed_train_images
+
+    query_data['number_of_images'] = MAX_QUERY_IMAGES
+    query_data['latent_dim'] = latent_dim
+    query_data['metadata_padding'] = 0
+    query_data['images'] = compressed_query_images
+
+    # Save the new images
+    args.save_file(train_data, files["-od"])
+    args.save_file(query_data, files["-oq"])

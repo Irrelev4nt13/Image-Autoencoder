@@ -36,7 +36,8 @@ clean:
 	rm -rf $(BIN_DIR)/* $(BUILD_DIR)/*
 
 run-reduce:
-	@python3 src/reduce.py
+	@python3 src/reduce.py -d datasets/train-images.idx3-ubyte -q datasets/t10k-images.idx3-ubyte \
+	-od datasets/train-images-reduced.idx3-ubyte -oq datasets/t10k-images-reduced.idx3-ubyte
 
 # Test targets
 
