@@ -29,6 +29,8 @@ public:
     int max_number_M_hypercube;          // M of Hypercube, default: 10
     int number_of_hypercube_dimensions;  // k of Hypercube, default: 3
     int number_of_probes;                // probes of Hypercube, default: 2
+    int in_size;                         // input size
+    bool hasLatentDim;
 
     ClusterCmdArgs(const int argc, const char *argv[]) : inputFile(""),
                                                          configFile(""),
@@ -39,7 +41,9 @@ public:
                                                          number_of_vector_hash_functions(4),
                                                          max_number_M_hypercube(10),
                                                          number_of_hypercube_dimensions(3),
-                                                         number_of_probes(2)
+                                                         number_of_probes(2),
+                                                         in_size(-1),
+                                                         hasLatentDim(0)
     {
         for (int i = 0; i < argc; i++)
         {
@@ -53,6 +57,10 @@ public:
                 complete = true;
             else if (!strcmp(argv[i], "-m"))
                 method = std::string(argv[i + 1]);
+            else if (!strcmp(argv[i], "-sd"))
+                in_size = atoi(argv[i + 1]);
+            else if (!strcmp(argv[i], "-hasLatent"))
+                hasLatentDim = atoi(argv[i + 1]);
         }
 
         readFilenameIfEmpty(configFile, "configuration file");
