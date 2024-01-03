@@ -41,23 +41,23 @@ run-reduce:
 
 # Test targets
 
-TEST_DIR := tests
+SRC_DIR := src
 
-TEST_FILES := $(wildcard $(TEST_DIR)/*.cpp)
+TEST_FILES := $(wildcard $(SRC_DIR)/*.cpp)
 
-LSH_TEST := $(BIN_DIR)/lsh_test
-CUBE_TEST := $(BIN_DIR)/cube_test
-GRAPH_TEST := $(BIN_DIR)/graph_test
+LSH_TEST := $(BIN_DIR)/lsh
+CUBE_TEST := $(BIN_DIR)/cube
+GRAPH_TEST := $(BIN_DIR)/graph
 
-LSH_TEST_OBJ := $(BUILD_DIR)/lsh_test.o
-CUBE_TEST_OBJ := $(BUILD_DIR)/cube_test.o
-GRAPH_TEST_OBJ := $(BUILD_DIR)/graph_test.o
+LSH_TEST_OBJ := $(BUILD_DIR)/lsh.o
+CUBE_TEST_OBJ := $(BUILD_DIR)/cube.o
+GRAPH_TEST_OBJ := $(BUILD_DIR)/graph.o
 
-TEST_EXEC_FILES := $(TEST_FILES:$(TEST_DIR)/%.cpp=$(BIN_DIR)/%)
+TEST_EXEC_FILES := $(TEST_FILES:$(SRC_DIR)/%.cpp=$(BIN_DIR)/%)
 
 tests: $(TEST_EXEC_FILES)
 
-$(BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(LIBS)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(LIBS)
 	$(CXX) -c $(filter-out %.hpp, $<) -o $@ $(INCLUDE_FLAGS) $(FLAGS)
 
 $(LSH_TEST): $(LSH_TEST_OBJ) $(LSH_OBJ_MODULES) $(COMMON_OBJ_MODULES)
@@ -74,6 +74,15 @@ lsh-test: $(LSH_TEST)
 cube-test: $(CUBE_TEST)
 
 graph-test: $(GRAPH_TEST)
+
+ARGS_LSH := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images-reduced.idx3-ubyte -k 4 -L 5 -o output/lsh_output.txt -N 5 -R 10000 \
+-sd 60000 -sq 200 -hasLatent 1
+
+ARGS_CUBE := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images-reduced.idx3-ubyte -k 14 -M 6000 -probes 15 -o output/cube_output.txt -N 5 -R 10000 \
+-sd 60000 -sq 200 -hasLatent 1
+
+ARGS_GRAPH := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images-reduced.idx3-ubyte -k 40 -E 30 -R 10 -N 3 -l 500 -m 2 -o output/graph_output.txt \
+-sd 5000 -sq 200 -hasLatent 1
 
 test-lsh: lsh-test
 	./$(LSH_TEST) $(ARGS_LSH)

@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 import args
 import sys
 
-MAX_TRAINING_IMAGES = 5000 # Number of images to use for training
+MAX_TRAINING_IMAGES = 60000 # Number of images to use for training
 MAX_QUERY_IMAGES = 1000 # Number of images to use for query
 
 if __name__ == "__main__":

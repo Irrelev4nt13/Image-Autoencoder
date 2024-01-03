@@ -11,7 +11,7 @@
 #include "Utils.hpp"
 #endif
 
-FileParser::FileParser(std::string inputFile, int size)
+FileParser::FileParser(std::string inputFile, int size, bool latentDim)
 {
 
 #ifdef DEBUG
@@ -39,8 +39,12 @@ FileParser::FileParser(std::string inputFile, int size)
         metadata.numOfImages = ntohl(metadata.numOfImages);
     else
         metadata.numOfImages = size;
+
     metadata.numOfRows = ntohl(metadata.numOfRows);
     metadata.numOfColumns = ntohl(metadata.numOfColumns);
+
+    if (latentDim)
+        metadata.numOfColumns = 1; // flattened images. numOfRows gets the value of latent dim from metadata
 
     uint32_t image_size = metadata.numOfRows * metadata.numOfColumns;
 

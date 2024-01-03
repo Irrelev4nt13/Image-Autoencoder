@@ -18,6 +18,9 @@ public:
     int probes;             // -probes <int>
     int numNn;              // -Ν <number of nearest>
     double radius;          // -R radius
+    int in_size;            // input size
+    int q_size;             // query size
+    bool hasLatentDim;
 
     CubeCmdArgs(const int argc, const char *argv[]) : inputFile(""),
                                                       queryFile(""),
@@ -26,7 +29,10 @@ public:
                                                       maxCanditates(10),
                                                       probes(2),
                                                       numNn(1),
-                                                      radius(10000)
+                                                      radius(10000),
+                                                      in_size(-1),
+                                                      q_size(-1),
+                                                      hasLatentDim(0)
     {
         for (int i = 0; i < argc; i++)
         {
@@ -46,6 +52,12 @@ public:
                 numNn = atoi(argv[i + 1]);
             else if (!strcmp(argv[i], "-R"))
                 radius = atof(argv[i + 1]);
+            else if (!strcmp(argv[i], "-sd"))
+                in_size = atoi(argv[i + 1]);
+            else if (!strcmp(argv[i], "-sq"))
+                q_size = atoi(argv[i + 1]);
+            else if (!strcmp(argv[i], "-hasLatent"))
+                hasLatentDim = atoi(argv[i + 1]);
         }
     }
 };

@@ -22,6 +22,9 @@ public:
     int expansions; // -E number of extensions
     int restarts;   // -R number of restarts
     int numNn;      // -Ν number of Nearest Neighbors
+    int in_size;    // input size
+    int q_size;     // query size
+    bool hasLatentDim;
 
     GraphsCmdArgs(const int argc, const char *argv[]) : inputFile(""),
                                                         queryFile(""),
@@ -30,7 +33,10 @@ public:
                                                         l(-1),
                                                         graphNN(50),
                                                         expansions(30),
-                                                        restarts(1)
+                                                        restarts(1),
+                                                        in_size(-1),
+                                                        q_size(-1),
+                                                        hasLatentDim(0)
     {
         for (int i = 0; i < argc; i++)
         {
@@ -52,6 +58,12 @@ public:
                 m = atoi(argv[i + 1]);
             else if (!strcmp(argv[i], "-o"))
                 outputFile = std::string(argv[i + 1]);
+            else if (!strcmp(argv[i], "-sd"))
+                in_size = atoi(argv[i + 1]);
+            else if (!strcmp(argv[i], "-sq"))
+                q_size = atoi(argv[i + 1]);
+            else if (!strcmp(argv[i], "-hasLatent"))
+                hasLatentDim = atoi(argv[i + 1]);
         }
     }
 };
