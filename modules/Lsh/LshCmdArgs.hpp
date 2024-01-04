@@ -10,16 +10,17 @@
 class LshCmdArgs
 {
 public:
-    std::string inputFile;  // -d <input file>
-    std::string queryFile;  // -q <query file>
-    std::string outputFile; // -o <output file>
-    int numHashFuncs;       // –k number of hash functions
-    int numHtables;         // -L number of hash tables
-    int numNn;              // -Ν number of Nearest Neighbors
-    double radius;          // -R radius
-    int in_size;            // input size
-    int q_size;             // query size
-    bool hasLatentDim;
+    std::string inputFile;    // -d <input file>
+    std::string queryFile;    // -q <query file>
+    std::string outputFile;   // -o <output file>
+    int numHashFuncs;         // –k number of hash functions
+    int numHtables;           // -L number of hash tables
+    int numNn;                // -Ν number of Nearest Neighbors
+    double radius;            // -R radius
+    int in_size;              // input size
+    int q_size;               // query size
+    std::string initDataset;  // -dinit <dataset of init space>
+    std::string initQueryset; // -qinit <queryset of init space>
 
     LshCmdArgs(const int argc, const char *argv[]) : inputFile(""),
                                                      queryFile(""),
@@ -30,7 +31,8 @@ public:
                                                      radius(10000),
                                                      in_size(-1),
                                                      q_size(-1),
-                                                     hasLatentDim(0)
+                                                     initDataset(""),
+                                                     initQueryset("")
     {
         for (int i = 0; i < argc; i++)
         {
@@ -52,8 +54,10 @@ public:
                 in_size = atoi(argv[i + 1]);
             else if (!strcmp(argv[i], "-sq"))
                 q_size = atoi(argv[i + 1]);
-            else if (!strcmp(argv[i], "-hasLatent"))
-                hasLatentDim = atoi(argv[i + 1]);
+            else if (!strcmp(argv[i], "-dinit"))
+                initDataset = std::string(argv[i + 1]);
+            else if (!strcmp(argv[i], "-qinit"))
+                initQueryset = std::string(argv[i + 1]);
         }
     }
 };
