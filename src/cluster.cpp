@@ -20,7 +20,7 @@ int main(int argc, char const *argv[])
     readFilenameIfEmpty(args.inputFile, "input");
 
     // Parse file and get the images
-    FileParser inputParser(args.inputFile, args.in_size, args.hasLatentDim);
+    FileParser inputParser(args.inputFile, args.in_size);
     const std::vector<ImagePtr> input_images = inputParser.GetImages();
 
     readFilenameIfEmpty(args.outputFile, "output");

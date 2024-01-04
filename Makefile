@@ -85,15 +85,15 @@ graph-test: $(GRAPH_TEST)
 cluster-test: $(CLUSTER)
 
 ARGS_LSH := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images-reduced.idx3-ubyte -k 4 -L 5 -o output/lsh_output.txt -N 5 -R 10000 \
--sd 60000 -sq 200 -hasLatent 1
+-sd 60000 -sq 200
 
 ARGS_CUBE := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images-reduced.idx3-ubyte -k 14 -M 6000 -probes 15 -o output/cube_output.txt -N 5 -R 10000 \
--sd 60000 -sq 200 -hasLatent 1
+-sd 60000 -sq 200
 
 ARGS_GRAPH := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images-reduced.idx3-ubyte -k 40 -E 30 -R 10 -N 3 -l 500 -m 2 -o output/graph_output.txt \
--sd 5000 -sq 200 -hasLatent 1
+-sd 5000 -sq 200
 
-ARGS_CLUSTER := -i datasets/train-images-reduced.idx3-ubyte -c conf/cluster.conf -o output/cluster_output.txt -m Hypercube -sd 30000 -hasLatent 1
+ARGS_CLUSTER := -i datasets/train-images-reduced.idx3-ubyte -c conf/cluster.conf -o output/cluster_output.txt -m Hypercube -sd 30000
 
 test-lsh: lsh-test
 	./$(LSH_TEST) $(ARGS_LSH)

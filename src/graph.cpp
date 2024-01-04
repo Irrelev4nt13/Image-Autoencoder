@@ -23,7 +23,7 @@ int main(int argc, char const *argv[])
     readFilenameIfEmpty(args.inputFile, "input");
 
     // Parse file and get the images
-    FileParser inputParser(args.inputFile, args.in_size, args.hasLatentDim);
+    FileParser inputParser(args.inputFile, args.in_size);
     const std::vector<ImagePtr> input_images = inputParser.GetImages();
 
     readFilenameIfEmpty(args.queryFile, "query");
@@ -75,7 +75,7 @@ int main(int argc, char const *argv[])
     while (true)
     {
         // Get query images
-        FileParser queryParser(args.queryFile, args.q_size, args.hasLatentDim);
+        FileParser queryParser(args.queryFile, args.q_size);
         std::vector<ImagePtr> query_images = queryParser.GetImages();
 
         output_file.open(args.outputFile);

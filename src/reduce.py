@@ -6,7 +6,7 @@ import args
 import sys
 
 MAX_TRAINING_IMAGES = 60000 # Number of images to use for training
-MAX_QUERY_IMAGES = 1000 # Number of images to use for query
+MAX_QUERY_IMAGES = 10000    # Number of images to use for query
 
 if __name__ == "__main__":
 
@@ -83,13 +83,13 @@ if __name__ == "__main__":
     compressed_query_images = tf.cast(compressed_query_images, tf.uint8)
 
     train_data['number_of_images'] = MAX_TRAINING_IMAGES
-    train_data['latent_dim'] = latent_dim
-    train_data['metadata_padding'] = 0
+    train_data['number_of_rows'] = latent_dim
+    train_data['number_of_columns'] = 1
     train_data['images'] = compressed_train_images
 
     query_data['number_of_images'] = MAX_QUERY_IMAGES
-    query_data['latent_dim'] = latent_dim
-    query_data['metadata_padding'] = 0
+    query_data['number_of_rows'] = latent_dim
+    query_data['number_of_columns'] = 1
     query_data['images'] = compressed_query_images
 
     # Save the new images
