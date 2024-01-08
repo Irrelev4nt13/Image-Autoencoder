@@ -40,6 +40,14 @@ MAKEFLAGS += -j8
 
 all: $(EXEC_FILES)
 
+lsh: $(LSH)
+
+cube: $(CUBE)
+
+cluster: $(CLUSTER)
+
+graph: $(GRAPH)
+
 $(BUILD_DIR)/%.o: $(MODULES_DIR)/%.cpp $(LIBS)
 	@mkdir -p $(@D)
 	$(CXX) -c $(filter-out %.hpp, $<) -o $@ $(INCLUDE_FLAGS) $(FLAGS)
@@ -65,10 +73,6 @@ $(GRAPH): $(GRAPH_OBJ) $(ALL_OBJ_MODULES)
 
 clean:
 	rm -rf $(BIN_DIR)/* $(BUILD_DIR)/*
-
-run-reduce:
-	@python3 src/reduce.py -d datasets/train-images.idx3-ubyte -q datasets/t10k-images.idx3-ubyte \
-	-od datasets/train-images-reduced.idx3-ubyte -oq datasets/t10k-images-reduced.idx3-ubyte
 
 # Test targets
 
@@ -113,16 +117,35 @@ cluster-test: $(CLUSTER_TEST)
 
 graph-test: $(GRAPH_TEST)
 
+# Run targets
+
 ARGS_LSH := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images-reduced.idx3-ubyte -k 4 -L 5 -o output/lsh_output.txt -N 5 -R 10000 \
 -sd 60000 -sq 200 -dinit datasets/train-images.idx3-ubyte -qinit datasets/t10k-images.idx3-ubyte
 
 ARGS_CUBE := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images-reduced.idx3-ubyte -k 14 -M 6000 -probes 15 -o output/cube_output.txt -N 5 -R 10000 \
--sd 60000 -sq 200
+-sd 60000 -sq 200 -dinit datasets/train-images.idx3-ubyte -qinit datasets/t10k-images.idx3-ubyte
 
-ARGS_GRAPH := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images-reduced.idx3-ubyte -k 40 -E 30 -R 10 -N 3 -l 500 -m 2 -o output/graph_output.txt \
--sd 5000 -sq 200
+ARGS_GRAPH := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images-reduced.idx3-ubyte -k 40 -E 30 -R 10 -N 3 -l 2000 -m 1 -o output/graph_output.txt \
+-sd 5000 -sq 2000 -dinit datasets/train-images.idx3-ubyte -qinit datasets/t10k-images.idx3-ubyte
 
-ARGS_CLUSTER := -i datasets/train-images-reduced.idx3-ubyte -c conf/cluster.conf -o output/cluster_output.txt -m Hypercube -sd 30000
+ARGS_CLUSTER := -i datasets/train-images-reduced.idx3-ubyte -c conf/cluster.conf -o output/cluster_output.txt -m Hypercube -sd 5000 \
+-dinit datasets/train-images.idx3-ubyte
+
+run-reduce:
+	@python3 src/reduce.py -d datasets/train-images.idx3-ubyte -q datasets/t10k-images.idx3-ubyte \
+	-od datasets/train-images-reduced.idx3-ubyte -oq datasets/t10k-images-reduced.idx3-ubyte
+
+run-lsh: lsh
+	./$(LSH) $(ARGS_LSH)
+
+run-cube: cube
+	./$(CUBE) $(ARGS_CUBE)
+
+run-cluster: cluster
+	./$(CLUSTER) $(ARGS_CLUSTER)
+
+run-graph: graph
+	./$(GRAPH) $(ARGS_GRAPH)
 
 test-lsh: lsh-test
 	./$(LSH_TEST) $(ARGS_LSH)

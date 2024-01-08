@@ -18,13 +18,14 @@ public:
     int m;                  // -m <1 for GNNS, 2 for MRNG>
     int l;                  // -l <int, only for Search-on-Graph> number of candidates
 
-    int graphNN;    // -k number of Nearest Neighbors in the GRAPH
-    int expansions; // -E number of extensions
-    int restarts;   // -R number of restarts
-    int numNn;      // -Ν number of Nearest Neighbors
-    int in_size;    // input size
-    int q_size;     // query size
-    bool hasLatentDim;
+    int graphNN;              // -k number of Nearest Neighbors in the GRAPH
+    int expansions;           // -E number of extensions
+    int restarts;             // -R number of restarts
+    int numNn;                // -Ν number of Nearest Neighbors
+    int in_size;              // input size
+    int q_size;               // query size
+    std::string initDataset;  // -dinit <dataset of init space>
+    std::string initQueryset; // -qinit <queryset of init space>
 
     GraphsCmdArgs(const int argc, const char *argv[]) : inputFile(""),
                                                         queryFile(""),
@@ -36,7 +37,8 @@ public:
                                                         restarts(1),
                                                         in_size(-1),
                                                         q_size(-1),
-                                                        hasLatentDim(0)
+                                                        initDataset(""),
+                                                        initQueryset("")
     {
         for (int i = 0; i < argc; i++)
         {
@@ -62,8 +64,10 @@ public:
                 in_size = atoi(argv[i + 1]);
             else if (!strcmp(argv[i], "-sq"))
                 q_size = atoi(argv[i + 1]);
-            else if (!strcmp(argv[i], "-hasLatent"))
-                hasLatentDim = atoi(argv[i + 1]);
+            else if (!strcmp(argv[i], "-dinit"))
+                initDataset = std::string(argv[i + 1]);
+            else if (!strcmp(argv[i], "-qinit"))
+                initQueryset = std::string(argv[i + 1]);
         }
     }
 };

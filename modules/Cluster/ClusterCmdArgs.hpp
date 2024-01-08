@@ -30,7 +30,8 @@ public:
     int number_of_hypercube_dimensions;  // k of Hypercube, default: 3
     int number_of_probes;                // probes of Hypercube, default: 2
     int in_size;                         // input size
-    bool hasLatentDim;
+    std::string initDataset;             // -dinit <dataset of init space>
+    std::string initQueryset;            // -qinit <queryset of init space>
 
     ClusterCmdArgs(const int argc, const char *argv[]) : inputFile(""),
                                                          configFile(""),
@@ -43,7 +44,8 @@ public:
                                                          number_of_hypercube_dimensions(3),
                                                          number_of_probes(2),
                                                          in_size(-1),
-                                                         hasLatentDim(0)
+                                                         initDataset(""),
+                                                         initQueryset("")
     {
         for (int i = 0; i < argc; i++)
         {
@@ -59,8 +61,10 @@ public:
                 method = std::string(argv[i + 1]);
             else if (!strcmp(argv[i], "-sd"))
                 in_size = atoi(argv[i + 1]);
-            else if (!strcmp(argv[i], "-hasLatent"))
-                hasLatentDim = atoi(argv[i + 1]);
+            else if (!strcmp(argv[i], "-dinit"))
+                initDataset = std::string(argv[i + 1]);
+            else if (!strcmp(argv[i], "-qinit"))
+                initQueryset = std::string(argv[i + 1]);
         }
 
         readFilenameIfEmpty(configFile, "configuration file");

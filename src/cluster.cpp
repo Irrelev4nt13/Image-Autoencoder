@@ -18,30 +18,27 @@ int main(int argc, char const *argv[])
     ClusterCmdArgs args(argc, argv);
 
     readFilenameIfEmpty(args.inputFile, "input");
+    readFilenameIfEmpty(args.outputFile, "output");
 
     // Parse file and get the images
     FileParser inputParser(args.inputFile, args.in_size);
     const std::vector<ImagePtr> input_images = inputParser.GetImages();
 
-    readFilenameIfEmpty(args.outputFile, "output");
-    std::ofstream output_file;
+    // Configure the metric used for the entire program
+    ImageDistance::setMetric(DistanceMetric::EUCLIDEAN);
+
+    FileParser iniDatasetParser = FileParser(args.initDataset, args.in_size);
+    std::vector<ImagePtr> initImages = iniDatasetParser.GetImages();
+
+    // Initialize timer
+    std::chrono::nanoseconds elapsed_cluster;
+
+    // Object with all clustering algorithms
+    ClusterAlgorithms *alg = new ClusterAlgorithms();
 
     std::vector<Cluster> clusters;
 
-    // Only for formatting purposes
-    int cluster_id_formatter = (int)std::to_string(args.number_of_clusters).length();
-    int size_formatter = (int)std::to_string(input_images.size()).length();
-
-    // Configure the metric used for the lsh program
-    ImageDistance::setMetric(DistanceMetric::EUCLIDEAN);
-
-    // Initialize sitmer
-    std::chrono::nanoseconds elapsed_cluster;
-
-    // Initialize an object which has all the clustering algorithms
-    ClusterAlgorithms *alg = new ClusterAlgorithms();
-
-    // We execute algorithm based on the method
+    // Execute algorithm based on the method
     if (args.method == "Classic")
     {
         startClock();
@@ -73,9 +70,25 @@ int main(int argc, char const *argv[])
         std::cout << "Error, unknown method" << std::endl;
         exit(EXIT_FAILURE);
     }
+
+    // convert clusters to initial space and get evaluate the objective function
+    double totalSumSquaredErrorNew = 0.0;
+    double totalSumSquaredErrorOld = 0.0;
+    for (auto &cluster : clusters)
+    {
+        totalSumSquaredErrorNew += cluster.SumSquaredError();
+        cluster.ConvertToInitSpace(input_images, initImages);
+        totalSumSquaredErrorOld += cluster.SumSquaredError();
+    }
+
     std::tuple<std::vector<double>, double> silhouettes = alg->Silhouettes(clusters);
 
+    std::ofstream output_file;
     output_file.open(args.outputFile);
+
+    // Only for formatting purposes
+    int cluster_id_formatter = (int)std::to_string(args.number_of_clusters).length();
+    int size_formatter = (int)std::to_string(input_images.size()).length();
 
     // We iterate over all clusters to print the necessary informations
     for (auto cluster : clusters)
@@ -92,6 +105,7 @@ int main(int argc, char const *argv[])
     output_file << "\nclustering_time: " << elapsed_cluster.count() * 1e-9 << std::endl;
     output_file << "\nSilhouette: [";
     double sum_silhouette = 0;
+
     for (auto silhouette : std::get<0>(silhouettes))
     {
         output_file << silhouette << ", ";
@@ -99,13 +113,15 @@ int main(int argc, char const *argv[])
     }
 
     output_file << std::get<1>(silhouettes) << "]" << std::endl
-                << std::endl
                 << std::endl;
 
     std::cout << "sum silhouettes: " << sum_silhouette << std::endl;
 
     output_file << "Average silhouette: " << (double)sum_silhouette / (double)args.number_of_clusters << std::endl
                 << std::endl;
+
+    output_file << "Objective Function evaluation in latent space: " << totalSumSquaredErrorNew << std::endl;
+    output_file << "Objective Function evaluation in initial space: " << totalSumSquaredErrorOld << std::endl;
 
     if (args.complete)
         for (auto cluster : clusters)
@@ -118,8 +134,10 @@ int main(int argc, char const *argv[])
                 output_file << ", " << image->id;
             output_file << "}" << std::endl;
         }
+
     output_file.close();
 
     delete alg;
+
     return EXIT_SUCCESS;
 }

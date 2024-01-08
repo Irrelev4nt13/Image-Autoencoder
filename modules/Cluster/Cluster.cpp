@@ -6,6 +6,7 @@
 #include "Image.hpp"
 #include "Utils.hpp"
 #include "ClusterAlgorithms.hpp"
+#include "BruteForce.hpp"
 
 // Simple constructor for Cluster object. We make a new pointer for the centoid to avoid conflicts with the real one
 Cluster::Cluster(ImagePtr image, const int id) : centroid(new Image(*image)), id(id), prev_len(0), cur_len(0), distance(ImageDistance::getInstance()) {}
@@ -13,6 +14,22 @@ Cluster::Cluster(ImagePtr image, const int id) : centroid(new Image(*image)), id
 Cluster::~Cluster() {}
 
 ImagePtr Cluster::GetCentroid() { return centroid; }
+
+void Cluster::ConvertToInitSpace(const std::vector<ImagePtr> &latentSpaceImages, const std::vector<ImagePtr> &initSpaceImages)
+{
+    // Convert all members of cluster using the id
+    for (auto &image : this->member_of_cluster)
+    {
+        image = initSpaceImages[image->id];
+    }
+
+    // Convert centroid to initial space
+    // First find the closest point to the centroid from the latent dimension dataset
+    ImagePtr closestPointToCentroid = BruteForce(latentSpaceImages, this->centroid, 1)[0].image;
+
+    // Convert centroid to initial space using the id
+    this->centroid = initSpaceImages[closestPointToCentroid->id];
+}
 
 std::vector<ImagePtr> Cluster::GetMemberOfCluster() { return member_of_cluster; }
 
@@ -76,4 +93,20 @@ double Cluster::AverageDistance(ImagePtr image)
     if ((int)this->GetMemberOfCluster().size() > 1)
         return totalDistance / ((int)this->GetMemberOfCluster().size() - 1);
     return totalDistance / (int)this->GetMemberOfCluster().size();
+}
+
+double Cluster::SumSquaredError()
+{
+    double sse = 0.0;
+
+    for (auto &member : this->member_of_cluster)
+    {
+        // Calculate the distance between each member and the centroid
+        double dist = this->distance->calculate(this->centroid, member);
+
+        // Square the distance and add it to the total SSE of cluster
+        sse += dist * dist;
+    }
+
+    return sse;
 }

@@ -38,12 +38,14 @@ public:
     Cluster(ImagePtr image, const int id);
     ~Cluster();
     ImagePtr GetCentroid();
+    void ConvertToInitSpace(const std::vector<ImagePtr> &latentSpaceImages, const std::vector<ImagePtr> &initSpaceImages);
     std::vector<ImagePtr> GetMemberOfCluster();
     void AddToCluster(ImagePtr image);
     int GetClusterId();
     void RemoveMember(ImagePtr member);
     void UpdateCentroid(ImagePtr image);
     double AverageDistance(ImagePtr image);
+    double SumSquaredError();
 };
 
 #endif

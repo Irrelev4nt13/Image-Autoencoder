@@ -50,11 +50,11 @@ int main(int argc, char const *argv[])
     // Initialize hash tables
     Lsh lsh_new(input_images, args.numHashFuncs, args.numHtables, args.numNn, w_new, numBuckets);
 
-    Lsh lsh_old(initImages, args.numHashFuncs, args.numHtables, args.numNn, w_old, numBuckets);
+    // Lsh lsh_old(initImages, args.numHashFuncs, args.numHtables, args.numNn, w_old, numBuckets);
 
     auto tTotalApproximate = std::chrono::nanoseconds(0);
     auto tTotalTrue = std::chrono::nanoseconds(0);
-    double sum_all_AAF;
+    double sum_all_AAF = 0;
     int sum_all_neighbors = 0;
 
     // Keep reading new query and output files until the user types "exit"
@@ -84,8 +84,6 @@ int main(int argc, char const *argv[])
             auto elapsed_brute = stopClock();
             tTotalTrue += elapsed_brute;
 
-            std::vector<Neighbor> approx_old = lsh_old.Approximate_kNN(initSpaceQuery);
-
             output_file << "Query: " << query->id << std::endl;
 
             for (int i = 0; i < approx_new.size(); i++)
@@ -97,7 +95,6 @@ int main(int argc, char const *argv[])
                 ImagePtr initSpaceNeighbor = initImages[neighborId];
 
                 double dist_new = distHelper->calculate(initSpaceNeighbor, initSpaceQuery);
-                double dist_old = approx_old[i].distance;
                 double dist_true = brute_vector[i].distance;
 
                 output_file << "Nearest neighbor-" << i + 1 << ": " << neighborId << std::endl
@@ -105,8 +102,8 @@ int main(int argc, char const *argv[])
 
                 output_file << "distanceTrue: " << dist_true << "\n";
 
-                double relativeAAF = dist_new / dist_old;
-                sum_all_AAF += relativeAAF;
+                double localAAF = dist_new / dist_true;
+                sum_all_AAF += localAAF;
             }
 
             sum_all_neighbors += approx_new.size();

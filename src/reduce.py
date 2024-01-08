@@ -76,6 +76,11 @@ if __name__ == "__main__":
     compressed_query_images = encoder.predict(query_images)
     max_value_query = tf.reduce_max(compressed_query_images)
 
+    min_value_train = tf.reduce_min(compressed_train_images)
+
+    print("max value: ", max_value_train)
+    print("min value: ", min_value_train)
+
     # Rescale the compressed images back to the 0-255 range
     compressed_train_images = (compressed_train_images / max_value_train) * 255
     compressed_train_images = tf.cast(compressed_train_images, tf.uint8)

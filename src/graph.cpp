@@ -33,9 +33,17 @@ int main(int argc, char const *argv[])
 
     // Configure the metric used for the lsh program
     ImageDistance::setMetric(DistanceMetric::EUCLIDEAN);
+    ImageDistance *distHelper = ImageDistance::getInstance();
+
+    // init file parsers
+    FileParser iniDatasetParser = FileParser(args.initDataset, args.in_size);
+    std::vector<ImagePtr> initImages = iniDatasetParser.GetImages();
+
+    FileParser initQuerysetParser = FileParser(args.initQueryset, args.q_size);
+    std::vector<ImagePtr> initQueryImages = initQuerysetParser.GetImages();
 
     // Initialize Graphs
-    GraphAlgorithm *algorithm = nullptr;
+    GraphAlgorithm *algorithm_new = nullptr;
     std::string graph_algorithm_name = "";
 
     if (args.numNn < 1)
@@ -47,7 +55,7 @@ int main(int argc, char const *argv[])
     {
         // GNNS initialization
         graph_algorithm_name = "GNNS";
-        algorithm = new GNNS(input_images, args.graphNN, args.expansions, args.restarts, args.numNn);
+        algorithm_new = new GNNS(input_images, args.graphNN, args.expansions, args.restarts, args.numNn);
     }
     else if (args.m == 2)
     {
@@ -58,7 +66,7 @@ int main(int argc, char const *argv[])
             return EXIT_FAILURE;
         }
         graph_algorithm_name = "MRNG";
-        algorithm = new Mrng(input_images, args.numNn, args.l);
+        algorithm_new = new Mrng(input_images, args.numNn, args.l);
     }
     else
     {
@@ -68,8 +76,8 @@ int main(int argc, char const *argv[])
 
     auto tTotalApproximate = std::chrono::nanoseconds(0);
     auto tTotalTrue = std::chrono::nanoseconds(0);
-    double AAF = 0;
-    int found = 0;
+    double sum_all_AAF = 0;
+    int sum_all_neighbors = 0;
 
     // Keep reading new query and output files until the user types "exit"
     while (true)
@@ -87,33 +95,43 @@ int main(int argc, char const *argv[])
         {
             ImagePtr query = query_images[q];
 
+            ImagePtr initSpaceQuery = initQueryImages[query->id];
+
             startClock();
-            std::vector<Neighbor> approx_vector = algorithm->Approximate_kNN(query);
+            std::vector<Neighbor> approx_new = algorithm_new->Approximate_kNN(query);
             auto elapsed_graph = stopClock();
             tTotalApproximate += elapsed_graph;
 
             startClock();
-            std::vector<Neighbor> brute_vector = BruteForce(input_images, query, args.numNn);
+            std::vector<Neighbor> brute_vector = BruteForce(initImages, initSpaceQuery, args.numNn);
             auto elapsed_brute = stopClock();
             tTotalTrue += elapsed_brute;
 
             output_file << "Query: " << query->id << std::endl;
 
-            int limit = approx_vector.size();
+            int limit = approx_new.size();
             for (int i = 0; i < limit; i++)
             {
-                ImagePtr image = approx_vector[i].image;
-                double aproxDist = approx_vector[i].distance;
+                Neighbor neighbor = approx_new[i];
 
-                output_file << "Nearest neighbor-" << i + 1 << ": " << image->id << std::endl
-                            << "distance" << graph_algorithm_name << "Approximate: " << aproxDist << "\n";
+                int neighborId = neighbor.image->id;
+
+                ImagePtr initSpaceNeighbor = initImages[neighborId];
+
+                double dist_new = distHelper->calculate(initSpaceNeighbor, initSpaceQuery);
+                double dist_true = brute_vector[i].distance;
+
+                output_file << "Nearest neighbor-" << i + 1 << ": " << neighborId << std::endl
+                            << "distance" << graph_algorithm_name << "Approximate: " << dist_new << "\n";
 
                 double trueDist = brute_vector[i].distance;
                 output_file << "distanceTrue: " << trueDist << "\n";
 
-                AAF += aproxDist / trueDist;
+                double localAAF = dist_new / dist_true;
+                sum_all_AAF += localAAF;
             }
-            found += limit;
+            sum_all_neighbors += approx_new.size();
+
             output_file << "t" << graph_algorithm_name << ": " << elapsed_graph.count() * 1e-9 << std::endl;
             output_file << "tTrue: " << elapsed_brute.count() * 1e-9 << std::endl;
 
@@ -122,7 +140,7 @@ int main(int argc, char const *argv[])
 
         output_file << "tAverageApproximate: " << tTotalApproximate.count() * 1e-9 / 100 << std::endl; // Average Approximate time
         output_file << "tAverageTrue: " << tTotalTrue.count() * 1e-9 / 100 << std::endl;               // Average True time
-        output_file << "AAF: " << AAF / found << std::endl;                                            // Average Approximation Factor
+        output_file << "AAF: " << sum_all_AAF / sum_all_neighbors << std::endl;                        // Average Approximation Factor
 
         // Read new query and output files.
         args.queryFile.clear();
@@ -138,7 +156,7 @@ int main(int argc, char const *argv[])
         output_file.close();
     }
 
-    delete algorithm;
+    delete algorithm_new;
 
     return EXIT_SUCCESS;
 }
