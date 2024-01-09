@@ -62,7 +62,7 @@ def save_file(data, file_name):
         # Because we read it as big endian
         file.write(data["magic_number"].byteswap().tobytes())
         file.write(data["number_of_images"].byteswap().tobytes())
-        file.write(data["number_of_rows"].byteswap().tobytes())
+        file.write(data["number_of_rows"].to_bytes(4, byteorder="big"))
         file.write(data["number_of_columns"].to_bytes(4, byteorder="big"))
         data["images"].astype(np.uint8).tofile(file)
 
