@@ -4,7 +4,7 @@ build/**
 bin/**
 datasets/**
 encoderEnv
-*.keras
+keras
 __pycache__
 
 # exclude

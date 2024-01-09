@@ -64,13 +64,13 @@ def save_plots(results, test_name, graph_type):
 
     fig.legend([time_bars, aaf_bars], ["Time", "AAF"], loc="lower right", bbox_to_anchor=(0.9, 0.12))
 
-    plt.title(f"{test_name.upper()} Latent Space Comparison Results")
-
     if graph_type is None:
+        plt.title(f"{test_name.upper()} Latent Space Comparison Results")
         if not os.path.exists(f"{test_name.upper()}"):
             os.makedirs(f"{test_name.upper()}")
         plt.savefig(f"{test_name.upper()}/results.png")
     else:
+        plt.title(f"{graph_type.upper()} Latent Space Comparison Results")
         if not os.path.exists(f"{graph_type.upper()}"):
             os.makedirs(f"{graph_type.upper()}")
         plt.savefig(f"{graph_type.upper()}/results.png")
@@ -96,20 +96,32 @@ def save_csv(results, test_name, graph_type):
 
 
 if __name__ == "__main__":
-    execute_make(f"lsh-test")
+    execute_make(f"tests")
 
-    results = {
-        "Latent Space": ["Original", 10, 15, 20, 25],
-        "Time": [10, 15, 20, 25, 30],
-        "AAF": [1, 2, 3, 4, 5],
-    }
+    for i, (test_name, graph_type) in enumerate(zip(["lsh", "cube", "graph", "graph"], [None, None, "gnns", "mrng"])):
+        # results = {
+        #     "Latent Space": ["Original", 10, 15, 20, 25],
+        #     "Time": [10, 15, 20, 25, 30],
+        #     "AAF": [1, 2, 3, 4, 5],
+        # }
+        for latent_space in ["Original", 10, 20, 30]:
+            results = {
+                "Latent Space": [],
+                "Time": [],
+                "AAF": [],
+            }
+            # print(test_name)
+            # print(graph_type)
+            output = execute_test(f"{test_name}", f"{i + 1} {i + 2}")
+            output = output.split("\n")
+            for curr_output in output:
+                key, value = curr_output.split(":")
+                results[key].append(float(value))
+            results["Latent Space"].append(latent_space)
+            # print(output)
 
-    # output = execute_test(f"lsh", f"1 2 3")
-    # output = output.split("\n")
-    # print(output)
+        save_plots(results, test_name, graph_type)
 
-    save_plots(results, "lsh", None)
-
-    save_csv(results, "lsh", None)
+        save_csv(results, test_name, graph_type)
 
     execute_make("clean")
