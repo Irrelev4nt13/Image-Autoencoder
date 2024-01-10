@@ -100,7 +100,7 @@ ARGS_CUBE := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images
 ARGS_GRAPH := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images-reduced.idx3-ubyte -k 40 -E 30 -R 10 -N 3 -l 2000 -m 1 -o output/graph_output.txt \
 -sd 5000 -sq 2000 -dinit datasets/train-images.idx3-ubyte -qinit datasets/t10k-images.idx3-ubyte
 
-ARGS_CLUSTER := -i datasets/train-images-reduced.idx3-ubyte -c conf/cluster.conf -o output/cluster_output.txt -m Hypercube -sd 5000 \
+ARGS_CLUSTER := -i datasets/train-images-reduced.idx3-ubyte -c conf/cluster.conf -o output/cluster_output.txt -m Classic -sd 5000 \
 -dinit datasets/train-images.idx3-ubyte
 
 ARGS_BRUTE := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images-reduced.idx3-ubyte -o output/brute_output.txt -N 5 \

@@ -67,7 +67,7 @@ int main(int argc, char const *argv[])
 
             output_file << "Query: " << latentQuery->id << std::endl;
 
-            for (int i = 0; i < approxNeighbors.size(); i++)
+            for (int i = 0; i < (int)approxNeighbors.size(); i++)
             {
                 Neighbor neighbor = approxNeighbors[i];
                 int neighborId = neighbor.image->id;

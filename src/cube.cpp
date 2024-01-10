@@ -26,16 +26,13 @@ int main(int argc, char const *argv[])
     readFilenameIfEmpty(args.outputFile, "output");
     std::ofstream output_file;
 
-    int approxAvg_new = 50; // approximate average pixel distance in latent space
-    int approxAvg_old = 80; // approximate average pixel distance in init space
+    int approxAvgDist = 50; // approximate average pixel distance in latent space
 
     // window
-    int w_new = sqrt(approxAvg_new * approxAvg_new * inputParser.GetMetadata().numOfRows * inputParser.GetMetadata().numOfColumns);
+    int w = sqrt(approxAvgDist * approxAvgDist * inputParser.GetMetadata().numOfRows * inputParser.GetMetadata().numOfColumns);
 
     FileParser iniDatasetParser = FileParser(args.initDataset, args.in_size);
     std::vector<ImagePtr> initImages = iniDatasetParser.GetImages();
-
-    int w_old = sqrt(approxAvg_old * approxAvg_old * iniDatasetParser.GetMetadata().numOfRows * iniDatasetParser.GetMetadata().numOfColumns);
 
     FileParser initQuerysetParser = FileParser(args.initQueryset, args.q_size);
     std::vector<ImagePtr> initQueryImages = initQuerysetParser.GetImages();
@@ -46,9 +43,7 @@ int main(int argc, char const *argv[])
     ImageDistance::setMetric(DistanceMetric::EUCLIDEAN);
 
     // Initialize cube structure
-    Cube cube_new(input_images, w_new, args.dimension, args.maxCanditates, args.probes, args.numNn, numBuckets);
-
-    // Cube cube_old(initImages, w_old, args.dimension, args.maxCanditates, args.probes, args.numNn, numBuckets);
+    Cube cube_new(input_images, w, args.dimension, args.maxCanditates, args.probes, args.numNn, numBuckets);
 
     auto tTotalApproximate = std::chrono::nanoseconds(0);
     auto tTotalTrue = std::chrono::nanoseconds(0);

@@ -19,39 +19,33 @@ int main(int argc, char const *argv[])
 
     // Parse file and get the images
     FileParser inputParser(args.inputFile, args.in_size);
-    const std::vector<ImagePtr> input_images = inputParser.GetImages();
+    const std::vector<ImagePtr> latentSpaceImages = inputParser.GetImages();
 
     readFilenameIfEmpty(args.queryFile, "query");
 
     readFilenameIfEmpty(args.outputFile, "output");
     std::ofstream output_file;
 
-    int approxAvg_new = 50; // approximate average pixel distance in latent space
-    int approxAvg_old = 80; // approximate average pixel distance in init space
-
-    // window
-    int w_new = sqrt(approxAvg_new * approxAvg_new * inputParser.GetMetadata().numOfRows * inputParser.GetMetadata().numOfColumns);
-
     FileParser iniDatasetParser = FileParser(args.initDataset, args.in_size);
-    std::vector<ImagePtr> initImages = iniDatasetParser.GetImages();
-
-    int w_old = sqrt(approxAvg_old * approxAvg_old * iniDatasetParser.GetMetadata().numOfRows * iniDatasetParser.GetMetadata().numOfColumns);
+    std::vector<ImagePtr> initSpaceImages = iniDatasetParser.GetImages();
 
     FileParser initQuerysetParser = FileParser(args.initQueryset, args.q_size);
-    std::vector<ImagePtr> initQueryImages = initQuerysetParser.GetImages();
-
-    int numBuckets = inputParser.GetMetadata().numOfImages / 8; // n / 8
+    std::vector<ImagePtr> initQueries = initQuerysetParser.GetImages();
 
     // Configure the metric used for the lsh program
     ImageDistance::setMetric(DistanceMetric::EUCLIDEAN);
 
-    ImageDistance *distHelper = ImageDistance::getInstance();
+    int approxAvgDist = 50; // approximate average pixel distance in latent space
+
+    // window
+    int w = sqrt(approxAvgDist * approxAvgDist * inputParser.GetMetadata().numOfRows * inputParser.GetMetadata().numOfColumns);
+    // buckets
+    int numBuckets = inputParser.GetMetadata().numOfImages / 8; // n / 8
 
     // Initialize hash tables
-    Lsh lsh_new(input_images, args.numHashFuncs, args.numHtables, args.numNn, w_new, numBuckets);
+    Lsh lsh_latent(latentSpaceImages, args.numHashFuncs, args.numHtables, args.numNn, w, numBuckets);
 
-    // Lsh lsh_old(initImages, args.numHashFuncs, args.numHtables, args.numNn, w_old, numBuckets);
-
+    ImageDistance *distHelper = ImageDistance::getInstance();
     auto tTotalApproximate = std::chrono::nanoseconds(0);
     auto tTotalTrue = std::chrono::nanoseconds(0);
     double sum_all_AAF = 0;
@@ -73,44 +67,46 @@ int main(int argc, char const *argv[])
         {
             ImagePtr query = query_images[q];
 
+            // latent space search with lsh (approximate neighbors)
             startClock();
-            std::vector<Neighbor> approx_new = lsh_new.Approximate_kNN(query);
+            std::vector<Neighbor> approxNeighbors = lsh_latent.Approximate_kNN(query);
             auto elapsed_lsh = stopClock();
             tTotalApproximate += elapsed_lsh;
 
-            ImagePtr initSpaceQuery = initQueryImages[query->id];
+            ImagePtr projectedQuery = initQueries[query->id];
 
+            // init space search with brute force (exact neighbors)
             startClock();
-            std::vector<Neighbor> brute_vector = BruteForce(initImages, initSpaceQuery, args.numNn);
+            std::vector<Neighbor> exactNeighbors = BruteForce(initSpaceImages, projectedQuery, args.numNn);
             auto elapsed_brute = stopClock();
             tTotalTrue += elapsed_brute;
 
             output_file << "Query: " << query->id << std::endl;
 
-            for (int i = 0; i < approx_new.size(); i++)
+            for (int i = 0; i < (int)approxNeighbors.size(); i++)
             {
-                Neighbor neighbor = approx_new[i];
+                Neighbor neighbor = approxNeighbors[i];
 
                 int neighborId = neighbor.image->id;
 
-                ImagePtr initSpaceNeighbor = initImages[neighborId];
+                ImagePtr projectedNeighbor = initSpaceImages[neighborId];
 
-                double dist_new = distHelper->calculate(initSpaceNeighbor, initSpaceQuery);
-                double dist_true = brute_vector[i].distance;
+                double dist_approx = distHelper->calculate(projectedNeighbor, projectedQuery);
+                double dist_true = exactNeighbors[i].distance;
 
                 output_file << "Nearest neighbor-" << i + 1 << ": " << neighborId << std::endl
-                            << "distanceLSH: " << dist_new << "\n";
+                            << "distanceLSH: " << dist_approx << "\n";
 
                 output_file << "distanceTrue: " << dist_true << "\n";
 
-                double localAAF = dist_new / dist_true;
+                double localAAF = dist_approx / dist_true;
                 sum_all_AAF += localAAF;
 
                 if (localAAF > MAF || MAF == -1)
                     MAF = localAAF;
             }
 
-            sum_all_neighbors += approx_new.size();
+            sum_all_neighbors += approxNeighbors.size();
 
             output_file
                 << "tLSH: " << elapsed_lsh.count() * 1e-9 << std::endl;

@@ -62,16 +62,16 @@ void Cluster::RemoveMember(ImagePtr member)
 void Cluster::UpdateCentroid(ImagePtr image)
 {
     if (cur_len > prev_len) // Point was added
-        for (int i = 0; i < centroid->pixels.size(); i++)
+        for (int i = 0; i < (int)centroid->pixels.size(); i++)
             centroid->pixels[i] = centroid->pixels[i] * prev_len / cur_len + image->pixels[i] / cur_len;
     else // Point was removed
     {
         // After a removal we need to check that the cur_size is not zero to avoid division with 0
         if (cur_len == 0)
-            for (auto pixel : centroid->pixels)
+            for (auto &pixel : centroid->pixels)
                 pixel = 0;
         else
-            for (int i = 0; i < centroid->pixels.size(); i++)
+            for (int i = 0; i < (int)centroid->pixels.size(); i++)
                 centroid->pixels[i] = centroid->pixels[i] * prev_len / cur_len - image->pixels[i] / cur_len;
     }
 }
