@@ -55,6 +55,7 @@ int main(int argc, char const *argv[])
     auto tTotalApproximate = std::chrono::nanoseconds(0);
     auto tTotalTrue = std::chrono::nanoseconds(0);
     double sum_all_AAF = 0;
+    double MAF = -1;
     int sum_all_neighbors = 0;
 
     // Keep reading new query and output files until the user types "exit"
@@ -104,6 +105,9 @@ int main(int argc, char const *argv[])
 
                 double localAAF = dist_new / dist_true;
                 sum_all_AAF += localAAF;
+
+                if (localAAF > MAF || MAF == -1)
+                    MAF = localAAF;
             }
 
             sum_all_neighbors += approx_new.size();
@@ -114,9 +118,10 @@ int main(int argc, char const *argv[])
                         << std::endl;
         }
 
-        output_file << "tAverageApproximate: " << tTotalApproximate.count() * 1e-9 / 100 << std::endl; // Average Approximate time
-        output_file << "tAverageTrue: " << tTotalTrue.count() * 1e-9 / 100 << std::endl;               // Average True time
-        output_file << "AAF: " << sum_all_AAF / sum_all_neighbors << std::endl;                        // Average Approximation Factor
+        output_file << "tAverageApproximate: " << tTotalApproximate.count() * 1e-9 / args.q_size << std::endl; // Average Approximate time
+        output_file << "tAverageTrue: " << tTotalTrue.count() * 1e-9 / args.q_size << std::endl;               // Average True time
+        output_file << "AAF: " << sum_all_AAF / sum_all_neighbors << std::endl;                                // Average Approximation Factor
+        output_file << "MAF: " << sum_all_AAF / sum_all_neighbors << std::endl;                                // Maximum Approximation Factor
 
         // Read new query and output files.
         args.queryFile.clear();

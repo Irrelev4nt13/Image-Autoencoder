@@ -72,13 +72,11 @@ int main(int argc, char const *argv[])
     }
 
     // convert clusters to initial space and get evaluate the objective function
-    double totalSumSquaredErrorNew = 0.0;
-    double totalSumSquaredErrorOld = 0.0;
+    double objective_function = 0.0;
     for (auto &cluster : clusters)
     {
-        totalSumSquaredErrorNew += cluster.SumSquaredError();
         cluster.ConvertToInitSpace(input_images, initImages);
-        totalSumSquaredErrorOld += cluster.SumSquaredError();
+        objective_function += cluster.SumSquaredError();
     }
 
     std::tuple<std::vector<double>, double> silhouettes = alg->Silhouettes(clusters);
@@ -120,8 +118,7 @@ int main(int argc, char const *argv[])
     output_file << "Average silhouette: " << (double)sum_silhouette / (double)args.number_of_clusters << std::endl
                 << std::endl;
 
-    output_file << "Objective Function evaluation in latent space: " << totalSumSquaredErrorNew << std::endl;
-    output_file << "Objective Function evaluation in initial space: " << totalSumSquaredErrorOld << std::endl;
+    output_file << "Objective Function evaluation in initial space: " << objective_function << std::endl;
 
     if (args.complete)
         for (auto cluster : clusters)
