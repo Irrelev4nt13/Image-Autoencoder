@@ -121,7 +121,7 @@ int main(int argc, char const *argv[])
         output_file << "tAverageApproximate: " << tTotalApproximate.count() * 1e-9 / args.q_size << std::endl; // Average Approximate time
         output_file << "tAverageTrue: " << tTotalTrue.count() * 1e-9 / args.q_size << std::endl;               // Average True time
         output_file << "AAF: " << sum_all_AAF / sum_all_neighbors << std::endl;                                // Average Approximation Factor
-        output_file << "MAF: " << sum_all_AAF / sum_all_neighbors << std::endl;                                // Maximum Approximation Factor
+        output_file << "MAF: " << MAF << std::endl;                                                            // Maximum Approximation Factor
 
         // Read new query and output files.
         args.queryFile.clear();
