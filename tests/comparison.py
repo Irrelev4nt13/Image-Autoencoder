@@ -42,40 +42,84 @@ def execute_test(test_name, args):
     return result.stdout.decode("utf-8")
 
 
-def save_plots(results, test_name, graph_type):
-    latent = results["Latent Space"]
-    time_ = results["Time"]
-    aaf = results["AAF"]
+def save_plots(results, test_name, graph_type, cluster_type, bruteforce_type):
+    # Extract names
+    dict_keys_list = list(results.keys())
+    zero = dict_keys_list[0]
+    first = dict_keys_list[1]
+    second = dict_keys_list[2]
+    third = dict_keys_list[3]
+    fourth = dict_keys_list[4]
 
-    fig, ax1 = plt.subplots(figsize=(7.5, 5.63))
-    time_bars = ax1.barh(np.arange(len(latent)) - 0.35 / 2, time_, 0.35, color="r", label="Time")
-    ax1.set_yticks(np.arange(len(latent)))
-    ax1.set_yticklabels(latent)
-    ax1.set_ylabel("Names")
-    ax1.set_xlabel("Time", color="r")
-    ax1.tick_params("x", colors="r")
+    color_map = {"Original": "blue", "10": "red", "20": "green", "30": "purple"}
 
-    ax2 = ax1.twiny()
-    aaf_bars = ax2.barh(np.arange(len(latent)) + 0.35 / 2, aaf, 0.35, color="b", label="AAF")
-    ax2.set_yticks(np.arange(len(latent)))
-    ax2.set_yticklabels(latent)
-    ax2.set_xlabel("AAF", color="b")
-    ax2.tick_params("x", colors="b")
-
-    fig.legend([time_bars, aaf_bars], ["Time", "AAF"], loc="lower right", bbox_to_anchor=(0.9, 0.12))
-
+    plt.figure()
+    plt.bar(results[zero], results[first], label=first, color=[color_map[name] for name in ["Original", "10", "20", "30"]])
+    plt.xlabel(f"{zero} values")
+    plt.ylabel(f"{first} values")
+    plt.title(f"f({zero}) = {first}")
     if graph_type is None:
-        plt.title(f"{test_name.upper()} Latent Space Comparison Results")
+        plt.title(f"{test_name.upper()} Latent Space Comparison Results {first}")
         if not os.path.exists(f"{test_name.upper()}"):
             os.makedirs(f"{test_name.upper()}")
-        plt.savefig(f"{test_name.upper()}/results.png")
+        plt.savefig(f"{test_name.upper()}/{first}.png")
     else:
-        plt.title(f"{graph_type.upper()} Latent Space Comparison Results")
+        plt.title(f"{graph_type.upper()} Latent Space Comparison Results {first}")
         if not os.path.exists(f"{graph_type.upper()}"):
             os.makedirs(f"{graph_type.upper()}")
-        plt.savefig(f"{graph_type.upper()}/results.png")
+        plt.savefig(f"{graph_type.upper()}/{first}.png")
 
-    print("The bar plots were saved")
+    plt.figure()
+    plt.bar(results[zero], results[second], label=second, color=[color_map[name] for name in ["Original", "10", "20", "30"]])
+    plt.xlabel(f"{zero} values")
+    plt.ylabel(f"{second} values")
+    plt.title(f"f({zero}) = {second}")
+    if graph_type is None:
+        plt.title(f"{test_name.upper()} Latent Space Comparison Results {second}")
+        if not os.path.exists(f"{test_name.upper()}"):
+            os.makedirs(f"{test_name.upper()}")
+        plt.savefig(f"{test_name.upper()}/{second}.png")
+    else:
+        plt.title(f"{graph_type.upper()} Latent Space Comparison Results {second}")
+        if not os.path.exists(f"{graph_type.upper()}"):
+            os.makedirs(f"{graph_type.upper()}")
+        plt.savefig(f"{graph_type.upper()}/{second}.png")
+
+    if bruteforce_type is None:
+        plt.figure()
+        plt.bar(results[zero], results[third], label=third, color=[color_map[name] for name in ["Original", "10", "20", "30"]])
+        plt.xlabel(f"{zero} values")
+        plt.ylabel(f"{third} values")
+        plt.title(f"f({zero}) = {third}")
+        if graph_type is None:
+            plt.title(f"{test_name.upper()} Latent Space Comparison Results {third}")
+            if not os.path.exists(f"{test_name.upper()}"):
+                os.makedirs(f"{test_name.upper()}")
+            plt.savefig(f"{test_name.upper()}/{third}.png")
+        else:
+            plt.title(f"{graph_type.upper()} Latent Space Comparison Results {third}")
+            if not os.path.exists(f"{graph_type.upper()}"):
+                os.makedirs(f"{graph_type.upper()}")
+            plt.savefig(f"{graph_type.upper()}/{third}.png")
+
+    if cluster_type is None:
+        plt.figure()
+        plt.bar(results[zero], results[fourth], label=fourth, color=[color_map[name] for name in ["Original", "10", "20", "30"]])
+        plt.xlabel(f"{zero} values")
+        plt.ylabel(f"{fourth} values")
+        plt.title(f"f({zero}) = {fourth}")
+        if graph_type is None:
+            plt.title(f"{test_name.upper()} Latent Space Comparison Results {fourth}")
+            if not os.path.exists(f"{test_name.upper()}"):
+                os.makedirs(f"{test_name.upper()}")
+            plt.savefig(f"{test_name.upper()}/{fourth}.png")
+        else:
+            plt.title(f"{graph_type.upper()} Latent Space Comparison Results {fourth}")
+            if not os.path.exists(f"{graph_type.upper()}"):
+                os.makedirs(f"{graph_type.upper()}")
+            plt.savefig(f"{graph_type.upper()}/{fourth}.png")
+
+    print("Bar plots were saved")
 
 
 def save_csv(results, test_name, graph_type):
@@ -96,32 +140,44 @@ def save_csv(results, test_name, graph_type):
 
 
 if __name__ == "__main__":
-    execute_make(f"tests")
+    # execute_make(f"lsh-test")
+    results = {
+        "Latent Space": ["Original", "10", "20", "30"],
+        "tAverageApproximate": [10, 15, 20, 25],
+        "tAverageTrue": [100, 90, 80, 70],
+        "AAF": [1, 2, 3, 4],
+        "MAF": [1, 2, 3, 4],
+    }
+    test_name = "lsh"
+    graph_type = None
+    cluster_type = None
+    bruteforce_type = None
+    # for i, (test_name, graph_type) in enumerate(zip(["lsh", "cube", "graph", "graph"], [None, None, "gnns", "mrng"])):
+    #     # results = {
+    #     #     "Latent Space": ["Original", 10, 15, 20, 25],
+    #     #     "Time": [10, 15, 20, 25, 30],
+    #     #     "AAF": [1, 2, 3, 4, 5],
+    #     # }
+    #     for latent_space in ["Original", 10, 20, 30]:
+    #         results = {
+    #             "Latent Space": [],
+    #             "tAverageApproximate": [],
+    #             "tAverageTrue": [],
+    #             "AAF": [],
+    #             "MAF": [],
+    #         }
+    #         # print(test_name)
+    #         # print(graph_type)
+    #         output = execute_test(f"{test_name}", f"{i + 1} {i + 2}")
+    #         output = output.split("\n")
+    #         for curr_output in output:
+    #             key, value = curr_output.split(":")
+    #             results[key].append(float(value))
+    #         results["Latent Space"].append(latent_space)
+    #         # print(output)
 
-    for i, (test_name, graph_type) in enumerate(zip(["lsh", "cube", "graph", "graph"], [None, None, "gnns", "mrng"])):
-        # results = {
-        #     "Latent Space": ["Original", 10, 15, 20, 25],
-        #     "Time": [10, 15, 20, 25, 30],
-        #     "AAF": [1, 2, 3, 4, 5],
-        # }
-        for latent_space in ["Original", 10, 20, 30]:
-            results = {
-                "Latent Space": [],
-                "Time": [],
-                "AAF": [],
-            }
-            # print(test_name)
-            # print(graph_type)
-            output = execute_test(f"{test_name}", f"{i + 1} {i + 2}")
-            output = output.split("\n")
-            for curr_output in output:
-                key, value = curr_output.split(":")
-                results[key].append(float(value))
-            results["Latent Space"].append(latent_space)
-            # print(output)
+    save_plots(results, test_name, graph_type, cluster_type, bruteforce_type)
 
-        save_plots(results, test_name, graph_type)
-
-        save_csv(results, test_name, graph_type)
+    # save_csv(results, test_name, graph_type)
 
     execute_make("clean")
