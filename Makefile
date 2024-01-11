@@ -97,11 +97,11 @@ ARGS_LSH := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images-
 ARGS_CUBE := -d datasets/train-images-reduced.idx3-ubyte -q datasets/t10k-images-reduced.idx3-ubyte -k 14 -M 6000 -probes 15 -o output/cube_output.txt -N 5 -R 10000 \
 -sd 60000 -sq 200 -dinit datasets/train-images.idx3-ubyte -qinit datasets/t10k-images.idx3-ubyte
 
-ARGS_GRAPH := -d datasets/train-images-reduced-10.idx3-ubyte -q datasets/t10k-images-reduced-10.idx3-ubyte -k 40 -E 30 -R 10 -N 3 -l 500 -m 2 -o output/graph_output_mrng.txt \
--sd 10000 -sq 200 -dinit datasets/train-images.idx3-ubyte -qinit datasets/t10k-images.idx3-ubyte
+ARGS_GRAPH := -d datasets/train-images-reduced-20.idx3-ubyte -q datasets/t10k-images-reduced-20.idx3-ubyte -k 40 -E 30 -R 10 -N 3 -l 500 -m 2 -o output/graph_output_mrng_ls_20_l_500.txt \
+-sd 60000 -sq 200 -dinit datasets/train-images.idx3-ubyte -qinit datasets/t10k-images.idx3-ubyte
 
-ARGS_CLUSTER := -i datasets/train-images-reduced.idx3-ubyte -c conf/cluster.conf -o output/cluster_output.txt -m Classic -sd 5000 \
--dinit datasets/train-images.idx3-ubyte -init
+ARGS_CLUSTER := -i datasets/t10k-images-reduced-10.idx3-ubyte -c conf/cluster.conf -o output/cluster_output.txt -m Classic -sd 10000 \
+-dinit datasets/t10k-images.idx3-ubyte -init
 
 ARGS_BRUTE := -d datasets/train-images-reduced-30.idx3-ubyte -q datasets/t10k-images-reduced-30.idx3-ubyte -o output/brute_output.txt -N 5 \
 -sd 60000 -sq 200 -dinit datasets/train-images.idx3-ubyte -qinit datasets/t10k-images.idx3-ubyte
