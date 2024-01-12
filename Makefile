@@ -53,7 +53,7 @@ ARGS_GRAPH := -d datasets/train-images-reduced-10.idx3-ubyte -q datasets/t10k-im
 -sd 60000 -sq 200 -dinit datasets/train-images.idx3-ubyte -qinit datasets/t10k-images.idx3-ubyte
 
 ARGS_CLUSTER := -i datasets/t10k-images-reduced-10.idx3-ubyte -c conf/cluster.conf -o output/cluster_output.txt -m Classic -sd 10000 \
--dinit datasets/t10k-images.idx3-ubyte -init
+-dinit datasets/t10k-images.idx3-ubyte
 
 ARGS_BRUTE := -d datasets/train-images-reduced-10.idx3-ubyte -q datasets/t10k-images-reduced-10.idx3-ubyte -o output/brute_output.txt -N 5 \
 -sd 60000 -sq 200 -dinit datasets/train-images.idx3-ubyte -qinit datasets/t10k-images.idx3-ubyte
