@@ -113,9 +113,6 @@ int main(int argc, char const *argv[])
     output_file << std::get<1>(silhouettes) << "]" << std::endl
                 << std::endl;
 
-    output_file << "Average silhouette: " << (double)sum_silhouette / (double)args.number_of_clusters << std::endl
-                << std::endl;
-
     output_file << "Objective Function evaluation in initial space: " << objective_function << std::endl;
 
     if (args.complete)
