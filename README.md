@@ -1,1 +1,7 @@
 # Image-Autoencoder
+
+Build an `image autoencoder` neural network that includes compression and decompression layers. You should perform training experiments of the network with different values ​​of hyperparameters (number of convolutional layers, sizes of convolutional filters, number of convolutional filters per layer, number of training epochs, batch size, latent dimension (default=10)) to minimize the loss avoiding overfitting. The input set data should be appropriately divided into a training set and a validation set. Based on the experiments, choose the best structure for the neural network, and the latent vector is used to extrapolate the images into the new vector space.
+
+Expand and use the previous homework files to find the nearest neighbor of the search set images in the new vector space (brute force search, `GNNS`, `MRNG` in the new space) as well as the real (true) and approximate (`LSH`, `Hypercube`, `GNNS`, `MRNG`) nearest neighbor in the original vector space. The results are compared in terms of the search time and the average distance of approximation, i.e. the average distance of an approximate / real nearest neighbor from the query vector in the original space.
+
+Clustering Σ1 kmeans of the input set images in the new space and Σ2 in the original space. Use of past homework files to compare configurations in terms of silhouette and objective function evaluation.
